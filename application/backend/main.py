@@ -20,43 +20,75 @@ app = FastAPI()
 
 # mendefinisikan schema input 
 class UserInput(BaseModel):
-    ... ### lengkapi dengan atribut-atribut yang dibutuhkan
+    name: str
+    gender: str
+    email_id: str
+    is_glogin: bool
+    follower_count: int
+    following_count: int
+    dataset_count: int
+    code_count: int
+    discussion_count: int
+    avg_nb_read_time_min: float
+    total_votes_gave_nb: int
+    total_votes_gave_ds: int
+    total_votes_gave_dc: int
 
 
 def preprocess_pipeline():
-    numeric_features = [...]  # masukkan kolom-kolom numerik
+    numeric_features = ['follower_count', 'following_count', 'dataset_count', 'code_count', 
+                         'discussion_count', 'avg_nb_read_time_min', 'total_votes_gave_nb', 
+                         'total_votes_gave_ds', 'total_votes_gave_dc']  # masukkan kolom-kolom numerik
 
-    categorical_boolean_features = [...] # masukkan kolom kategorikal dan boolean
+    categorical_boolean_features = ['gender', 'is_glogin']  # masukkan kolom kategorikal dan boolean
 
     numeric_transformer = Pipeline(steps=[
-        ...  ## lengkapi dengan pipeline yang dibutuhkan
+        ('scaler', StandardScaler())  # Standarisasi data numerik
     ])
 
     categorical_boolean_transfomer = Pipeline(steps=[
-        ... ## lengkapi dengan pipeline yang dibutuhkan
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))  # Encoding untuk data kategorikal
     ])
 
     preprocessor = ColumnTransformer(
-        ... ## lengkapi dengan transformer yang dibutuhkan
+        transformers=[
+            ('num', numeric_transformer, numeric_features),
+            ('cat', categorical_boolean_transfomer, categorical_boolean_features)
+        ],
+        remainder='drop'  # Drop kolom yang tidak termasuk dalam transformasi
     )
 
     return preprocessor
 
 # load model
-model = joblib.load('../../model/model.pkl')    ## SESUAIKAN DENGAN LOKASI MODEL YANG ANDA GUNAKAN
+model = joblib.load('../../model/ExtreTrees_model.pkl')    ## SESUAIKAN DENGAN LOKASI MODEL YANG ANDA GUNAKAN
 
 # endpoint untuk menerima input dan menghasilkan prediksi
 @app.post("/predict/", summary="Melakukan klasifikasi apakah suatu user tergolong bot atau bukan")
 async def predict(user_input: UserInput):
     # Ubah input menjadi format yang sesuai (pandas DataFrame)
-    data = pd.DataFrame(...)  ## lengkapi dengan data yang akan diproses
+    data = pd.DataFrame({
+        'name': [user_input.name],
+        'gender': [user_input.gender],
+        'email_id': [user_input.email_id],
+        'is_glogin': [user_input.is_glogin],
+        'follower_count': [user_input.follower_count],
+        'following_count': [user_input.following_count],
+        'dataset_count': [user_input.dataset_count],
+        'code_count': [user_input.code_count],
+        'discussion_count': [user_input.discussion_count],
+        'avg_nb_read_time_min': [user_input.avg_nb_read_time_min],
+        'total_votes_gave_nb': [user_input.total_votes_gave_nb],
+        'total_votes_gave_ds': [user_input.total_votes_gave_ds],
+        'total_votes_gave_dc': [user_input.total_votes_gave_dc]
+    })
 
     # Terapkan pipeline untuk preprocessing
     preprocessing_pipeline = preprocess_pipeline()
     processed_data = preprocessing_pipeline.fit_transform(data) 
     
     # Prediksi dengan model yang sudah dilatih
-    prediction = ... ## lengkapi kode untuk melakukan prediksi
+    prediction = model.predict(processed_data)
     
     return {"prediction": int(prediction[0])}
 
