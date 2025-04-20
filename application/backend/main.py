@@ -61,7 +61,7 @@ def preprocess_pipeline():
     return preprocessor
 
 # load model
-model = joblib.load('../../model/ExtreTrees_model.pkl')    ## SESUAIKAN DENGAN LOKASI MODEL YANG ANDA GUNAKAN
+model = joblib.load('../../model/ExtraTrees_model.pkl')    ## SESUAIKAN DENGAN LOKASI MODEL YANG ANDA GUNAKAN
 
 # endpoint untuk menerima input dan menghasilkan prediksi
 @app.post("/predict/", summary="Melakukan klasifikasi apakah suatu user tergolong bot atau bukan")
